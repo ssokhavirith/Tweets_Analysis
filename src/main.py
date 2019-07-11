@@ -7,42 +7,49 @@ from twitter import get_credential
 import nltk
 import datetime
 from utils import generate_bag_of_words, tokenize, word_extraction, getWordsDictionary
-from sklearn.feature_extraction.text import CountVectorizer
+from model_utils import create_frequency_dict
+from similarity import cosineSimilarity
+from nltk.stem import PorterStemmer, WordNetLemmatizer
 
-credential = get_credential()
-auth = tweepy.OAuthHandler(
-    credential['CONSUMER_KEY'], credential['CONSUMER_SECRET'])
-auth.set_access_token(credential['ACCESS_TOKEN'],
-                      credential['ACCESS_SECRET'])
+lemma = WordNetLemmatizer()
 
-api = tweepy.API(auth)
-#public_tweets = api.home_timeline()
-user = api.get_user('twitter')
+# ----- TWITTER API CONNECTION
 
-user_ids = {
-    "ElonMusk": 44196397,  # technology 1
-    "BillGates": 50393960,  # tech 2
-    "SundarPichai": 14130366,  # tech google ceo 3
-    "TimCook": 1636590253,  # tech apple ceo 4
-    "JeffBezos": 15506669,  # amazon ceo 5
-    "EmilyChang": 74130577,  # influence women in tech industry 6
-    "MarquesBrownlee": 29873662,  # famous tech vlogger 7
-    "DavidHeinemeierHansson": 14561327,  # founder of ruby on rail 8
-    "ReshmaSaujani": 57172253,  # founder of girl who code 9
-    "KaraSwisher": 5763262,  # founder of ReCode(journalists) 10
-    "ChristopherMims": 1769191,  # journalists 11
-    "David Cohen": 817209,  # founder of Techstar 12
-    "JeffWeiner": 20348377,  # ceo of linked in 13
-    "HuffPost": 73147282,  # news about technology 14
-    # A partner at the venture capital firm Andreessen Horowitz 15
-    "BenedictEvans": 1236101,
-    "BBCTech": 621583,  # 16
-    "ForbesTech": 14885549,  # 17
-    "AndrewNg": 216939636,  # 18
-    # Founder of machine intelligence research company Fast Forward Labs 19
-    "HilaryMason": 765548,
-    "SirajRaval": 2479063608,  # data scientist, talk about AI trends
-}
+# credential = get_credential()
+# auth = tweepy.OAuthHandler(
+#     credential['CONSUMER_KEY'], credential['CONSUMER_SECRET'])
+# auth.set_access_token(credential['ACCESS_TOKEN'],
+#                       credential['ACCESS_SECRET'])
+
+# api = tweepy.API(auth)
+# user = api.get_user('twitter')
+
+# user_ids = {
+#     "ElonMusk": 44196397,  # technology 1
+#     "BillGates": 50393960,  # tech 2
+#     "SundarPichai": 14130366,  # tech google ceo 3
+#     "TimCook": 1636590253,  # tech apple ceo 4
+#     "JeffBezos": 15506669,  # amazon ceo 5
+#     "EmilyChang": 74130577,  # influence women in tech industry 6
+#     "MarquesBrownlee": 29873662,  # famous tech vlogger 7
+#     "DavidHeinemeierHansson": 14561327,  # founder of ruby on rail 8
+#     "ReshmaSaujani": 57172253,  # founder of girl who code 9
+#     "KaraSwisher": 5763262,  # founder of ReCode(journalists) 10
+#     "ChristopherMims": 1769191,  # journalists 11
+#     "David Cohen": 817209,  # founder of Techstar 12
+#     "JeffWeiner": 20348377,  # ceo of linked in 13
+#     "HuffPost": 73147282,  # news about technology 14
+#     # A partner at the venture capital firm Andreessen Horowitz 15
+#     "BenedictEvans": 1236101,
+#     "BBCTech": 621583,  # 16
+#     "ForbesTech": 14885549,  # 17
+#     "AndrewNg": 216939636,  # 18
+#     # Founder of machine intelligence research company Fast Forward Labs 19
+#     "HilaryMason": 765548,
+#     "SirajRaval": 2479063608,  # data scientist, talk about AI trends
+# }
+
+# ------------------------
 
 # technology
 #
@@ -104,40 +111,71 @@ user_ids = {
 # tweets = ["Joe waited for the train", "The train train train train train train was late late late", "Mary and Samantha took the bus",
 #           "I looked for Mary and Samantha at the bus station",
 #           "Mary and Samantha arrived at the bus station early but waited until noon for the bus"]
+
 tweets = []
-with open('tech_tweets_march2019.txt') as f:
+# pre_processed = open('pre_processed_data.txt', 'a')
+# with open('tech_tweets_march2019.txt') as f:
+#     lines = f.readlines()
+#     for line in lines:
+#         tweet = ' '.join(word_extraction(line.split("--")[2]))
+#         pre_processed.write(tweet + '\n')
+#         tweets.append(tweet)
+# pre_processed.close()
+
+with open('pre_processed_data.txt') as f:
     lines = f.readlines()
     for line in lines:
-        tweet = ' '.join(word_extraction(line.split("--")[2]))
-        tweets.append(tweet)
-
-dict_words = getWordsDictionary(tweets)
-results = open('frequency_results.txt', 'a')
-for key, value in dict_words:
-    results.write(key + ' : ' + str(value) + '\n')
-
-results.close()
-# print(getWordsDictionary(tweets))
-# print(tokenize(tweets))
-# bow_transformer = CountVectorizer
-# extracted_tweets = []
-# for tweet in tweets:
-#     new_tweet = ' '.join(word_extraction(tweet))
-#     extracted_tweets.append(new_tweet)
-
-# print(getWordsDictionary(extracted_tweets))
-
-# wordfreq = {}
-# for raw_word in extracted_tweets[1].split():
-#     word = raw_word.strip(string.punctuation)
-#     if word not in wordfreq:
-#         wordfreq[word] = 0
-#     wordfreq[word] += 1
-# print(wordfreq)
+        tweets.append(line)
+f.close()
 
 
-# vectorizer = CountVectorizer()
-# X = vectorizer.fit_transform(extracted_tweets)
-# print(X.toarray())
-# print(tokenize(tweets))
-# generate_bag_of_words(tweets)
+# -------generate frequency document
+frequency_dicts = create_frequency_dict(tweets)
+doc_length = len(tweets)
+
+for freq_dict in frequency_dicts[:20]:
+    for freq_dict_1 in frequency_dicts[:20]:
+        freDict1 = freq_dict['freq_dict']
+        freDict2 = freq_dict_1['freq_dict']
+        print(cosineSimilarity(freDict1, freDict2))
+        print("  ")
+    print('\n')
+
+    # for freq_dict in frequency_dicts:
+    #     print(freq_dict['freq_dict'])
+    #     print('\n')
+
+    # freDict1 = frequency_dicts[315]['freq_dict']
+    # freDict2 = frequency_dicts[316]['freq_dict']
+
+    # print(freDict1)
+    # print(freDict2)
+
+    # print(cosineSimilarity(freDict1, freDict2))
+
+    # --------------------------------
+
+    # --------------------------- write frequency to file
+    # dict_words = getWordsDictionary(tweets)
+    # results = open('frequency_results.txt', 'a')
+    # for key, value in dict_words:
+    #     results.write(key + ' : ' + str(value) + '\n')
+    # results.close()
+    # ----------------------------
+    # print(getWordsDictionary(tweets))
+    # print(tokenize(tweets))
+    # bow_transformer = CountVectorizer
+    # extracted_tweets = []
+    # for tweet in tweets:
+    #     new_tweet = ' '.join(word_extraction(tweet))
+    #     extracted_tweets.append(new_tweet)
+
+    # print(getWordsDictionary(extracted_tweets))
+
+    # wordfreq = {}
+    # for raw_word in extracted_tweets[1].split():
+    #     word = raw_word.strip(string.punctuation)
+    #     if word not in wordfreq:
+    #         wordfreq[word] = 0
+    #     wordfreq[word] += 1
+    # print(wordfreq)

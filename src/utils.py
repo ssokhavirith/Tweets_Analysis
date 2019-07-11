@@ -1,22 +1,42 @@
+import operator
+import nltk
+from nltk.stem import PorterStemmer, WordNetLemmatizer
 import numpy
 import re
 from nltk.corpus import stopwords
 import string
-from nltk.stem import PorterStemmer
-import operator
+
+personal_stop_words = list(stopwords.words('english'))
+new_stop_words = ["would", "get", "like", "it"]
+personal_stop_words.extend(new_stop_words)
+
+# remove url
+
+
+def remove_urls(vTEXT):
+    vTEXT = re.sub(r'(https|http)?:\/\/(\w|\.|\/|\?|\=|\&|\%)*\b',
+                   '', vTEXT, flags=re.MULTILINE)
+    return(vTEXT)
+
 
 # remove stop words and characters in each words and contruct an array
 ps = PorterStemmer()
+lemma = WordNetLemmatizer()
 
 # remove stop words and stemmed
 
 
 def word_extraction(tweet):
-    stop_words = stopwords.words('english')
+    stop_words = personal_stop_words
+    # more_stop_words = ["would"]
     ignore = stop_words
-    words = re.sub("[^\w]", " ",  tweet).split()
+    words = " ".join([remove_urls(w)
+                      for w in tweet.split() if not w.isdigit()])
+    words = re.sub("[^\w]", " ",  words).split()
+    cleaned_text = [lemma.lemmatize(w.lower()) for w in words if lemma.lemmatize(
+        w.lower()) not in ignore]
     # stem
-    cleaned_text = [ps.stem(w.lower()) for w in words if w not in ignore]
+    # cleaned_text = [w for w in words if w not in ignore and not w.isdigit()]
     # remove_link = re.sub(
     #     r'^https?:\/\/.*[\r\n]*', '', cleaned_text, flags=re.MULTILINE)
     return cleaned_text

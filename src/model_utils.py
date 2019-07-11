@@ -27,7 +27,7 @@ def create_frequency_dict(tweets):
                 freq_dict[word] += 1
             else:
                 freq_dict[word] = 1
-            temp = {'doc_id': i, 'freq_dict': freq_dict}
+            temp = {'doc_id': i, 'freq_dict': freq_dict, 'tweet': tweet}
         freqDict_list.append(temp)
     return freqDict_list
 

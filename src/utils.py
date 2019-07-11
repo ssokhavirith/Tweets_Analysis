@@ -7,7 +7,7 @@ from nltk.corpus import stopwords
 import string
 
 personal_stop_words = list(stopwords.words('english'))
-new_stop_words = ["would", "get", "like", "it"]
+new_stop_words = ["would", "get", "like", "it", "amp"]
 personal_stop_words.extend(new_stop_words)
 
 # remove url
@@ -17,6 +17,11 @@ def remove_urls(vTEXT):
     vTEXT = re.sub(r'(https|http)?:\/\/(\w|\.|\/|\?|\=|\&|\%)*\b',
                    '', vTEXT, flags=re.MULTILINE)
     return(vTEXT)
+
+
+def remove_mentions(tweet):
+    tweet = re.sub(r'@\w+ ?', '', tweet)
+    return tweet
 
 
 # remove stop words and characters in each words and contruct an array
@@ -29,8 +34,9 @@ lemma = WordNetLemmatizer()
 def word_extraction(tweet):
     stop_words = personal_stop_words
     # more_stop_words = ["would"]
+    # remove mentioned
     ignore = stop_words
-    words = " ".join([remove_urls(w)
+    words = " ".join([remove_mentions(remove_urls(w))
                       for w in tweet.split() if not w.isdigit()])
     words = re.sub("[^\w]", " ",  words).split()
     cleaned_text = [lemma.lemmatize(w.lower()) for w in words if lemma.lemmatize(

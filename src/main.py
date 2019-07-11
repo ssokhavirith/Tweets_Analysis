@@ -151,10 +151,18 @@ for freq_dict in frequency_dicts[:doc_length]:
     similarity_matrix.append(
         {'tweet': freq_dict['tweet'], 'total_similar_tweets': count, 'similarity_vector': similarity_bag})
 
-cosine_similarity_results = open('cosine_results', 'a')
+cosine_similarity_results = open('cosine_results.txt', 'a')
+highest_sim_tweet = similarity_matrix[0]
 for row in similarity_matrix:
+    if(row['total_similar_tweets'] > highest_sim_tweet['total_similar_tweets']):
+        highest_sim_tweet = row
     cosine_similarity_results.write(
         row['tweet'] + ': ' + str(row['total_similar_tweets']) + '\n')
+cosine_similarity_results.write('-----------------\n')
+cosine_similarity_results.write(
+    'Highest matches : ' + str(highest_sim_tweet['total_similar_tweets']) + '\n')
+cosine_similarity_results.write('Tweet : ' + str(highest_sim_tweet['tweet']))
+
 cosine_similarity_results.close()
 
 # --------------------------------

@@ -132,7 +132,7 @@ f.close()
 # -------generate frequency document
 frequency_dicts = create_frequency_dict(tweets)
 # doc_length = len(tweets)
-doc_length = 100
+doc_length = 1000
 cosine_similarity_threshold = 0.3
 similarity_matrix = []
 
@@ -151,7 +151,7 @@ for freq_dict in frequency_dicts[:doc_length]:
     similarity_matrix.append(
         {'tweet': freq_dict['tweet'], 'total_similar_tweets': count, 'similarity_vector': similarity_bag})
 
-cosine_similarity_results = open('cosine_results.txt', 'a')
+cosine_similarity_results = open('cosine_results_1000_0.3.txt', 'a')
 highest_sim_tweet = similarity_matrix[0]
 for row in similarity_matrix:
     if(row['total_similar_tweets'] > highest_sim_tweet['total_similar_tweets']):

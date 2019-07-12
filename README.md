@@ -1,3 +1,4 @@
+- Clone the project
 - First you need to install library such as NLTK, Tweepy, Sckitlearn
 - The program will start by storing all the preprocessed data from 'pre_processed_data.txt' to array so we can use it for about analytics.
 - In this project there are txt files such as cosine_results_100_0.3 which means the result over 100 tweets which threshold over 0.3

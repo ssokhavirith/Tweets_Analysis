@@ -33,18 +33,12 @@ lemma = WordNetLemmatizer()
 
 def word_extraction(tweet):
     stop_words = personal_stop_words
-    # more_stop_words = ["would"]
-    # remove mentioned
     ignore = stop_words
     words = " ".join([remove_mentions(remove_urls(w))
                       for w in tweet.split() if not w.isdigit()])
     words = re.sub("[^\w]", " ",  words).split()
     cleaned_text = [lemma.lemmatize(w.lower()) for w in words if lemma.lemmatize(
         w.lower()) not in ignore]
-    # stem
-    # cleaned_text = [w for w in words if w not in ignore and not w.isdigit()]
-    # remove_link = re.sub(
-    #     r'^https?:\/\/.*[\r\n]*', '', cleaned_text, flags=re.MULTILINE)
     return cleaned_text
 
 # create an array of words in all tweets and remove duplicates
